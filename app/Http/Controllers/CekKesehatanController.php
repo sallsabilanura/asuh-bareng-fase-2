@@ -7,6 +7,8 @@ use App\Models\AnakAsuh;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CekKesehatanImport;
 
 class CekKesehatanController extends Controller
 {
@@ -158,5 +160,19 @@ class CekKesehatanController extends Controller
         $ceks = $query->get();
         $pdf = Pdf::loadView('cek_kesehatan.pdf', compact('ceks'));
         return $pdf->download('laporan-kesehatan-semua.pdf');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            Excel::import(new CekKesehatanImport, $request->file('file'));
+            return redirect()->route('cek_kesehatan.index')->with('success', 'Data cek kesehatan berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->route('cek_kesehatan.index')->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
     }
 }

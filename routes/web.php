@@ -102,6 +102,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('kakak_asuh', KakakAsuhController::class);
     Route::resource('penugasan_asuh', PenugasanAsuhController::class);
     Route::resource('absensi_pendampingan', AbsensiPendampinganController::class);
+    Route::post('/cek_kesehatan/import', [CekKesehatanController::class, 'import'])->name('cek_kesehatan.import');
     Route::resource('cek_kesehatan', CekKesehatanController::class);
 
     // Kebiasaan Baik Modul
@@ -118,10 +119,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Galeri dari Absensi Pendampingan
     Route::get('/galeri', [\App\Http\Controllers\GaleriController::class, 'index'])->name('galeri.index');
+    Route::get('/galeri/download/{id}', [\App\Http\Controllers\GaleriController::class, 'download'])->name('galeri.download');
 
-    // Anak Asuh Excel Routes
+    // Anak Asuh Excel & PDF Routes
     Route::get('/anak_asuh/template', [AnakAsuhController::class , 'downloadTemplate'])->name('anak_asuh.template');
     Route::post('/anak_asuh/import', [AnakAsuhController::class , 'importExcel'])->name('anak_asuh.import');
+    Route::get('/anak_asuh/export-pdf', [AnakAsuhController::class , 'exportPdf'])->name('anak_asuh.export_pdf');
 
     Route::resource('anak_asuh', AnakAsuhController::class);
 

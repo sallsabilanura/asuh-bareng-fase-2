@@ -36,13 +36,22 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="w-28 min-w-[100px]">
+                    <label for="status" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
+                    <select name="status" id="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm py-2">
+                        <option value="">Semua</option>
+                        <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                    </select>
+                </div>
                 
                 <div class="flex gap-2">
                     <button type="submit" class="bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold py-2 px-4 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center" title="Cari Data">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         Cari
                     </button>
-                    @if(request()->anyFilled(['search', 'umur', 'tahun']))
+                    @if(request()->anyFilled(['search', 'umur', 'tahun', 'status']))
                     <a href="{{ route('anak_asuh.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center" title="Reset Pencarian">
                         Reset
                     </a>
@@ -58,6 +67,9 @@
                     <button type="button" @click="showImportModal = true" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5" title="Import Data Excel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </button>
+                    <a href="{{ route('anak_asuh.export_pdf', request()->all()) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5" title="Export PDF">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </a>
                 </div>
             </div>
         </form>
@@ -120,67 +132,87 @@
         </div>
     @endif
 
-    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tempat, Tgl Lahir</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umur</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sekolah</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach ($anakAsuhs as $index => $anak)
+    <div x-data="{ showImageModal: false, modalImageUrl: '' }">
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anakAsuhs->firstItem() + $index }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if ($anak->FotoAnak)
-                                    <img src="{{ asset('storage/' . $anak->FotoAnak) }}" class="h-10 w-10 rounded-full object-cover border border-gray-200">
-                                @else
-                                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500 italic">N/A</div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="block text-sm font-semibold text-gray-900">{{ $anak->NamaLengkap }}</span>
-                                <span class="block text-xs text-gray-500 mt-1">
-                                    <span class="font-medium text-gray-700">Ortu:</span> {{ $anak->NamaOrangTua ?? '-' }} <br>
-                                    <span class="font-medium text-gray-700">Telp:</span> {{ $anak->NomorTelp ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->TempatLahir }}, {{ $anak->TanggalLahir }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->umur }} Thn</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->JenisKelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="block font-medium">{{ $anak->Sekolah }}</span>
-                                <span class="text-xs text-gray-500">Kelas {{ $anak->Kelas }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $anak->Status == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $anak->Status }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('anak_asuh.edit', $anak->id) }}" class="text-pink-600 hover:text-pink-900 mr-3 transition duration-150">Edit</a>
-                                <form action="{{ route('anak_asuh.destroy', $anak->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 transition duration-150" onclick="return confirm('Yakin ingin menghapus data anak asuh ini?')">Hapus</button>
-                                </form>
-                            </td>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tempat, Tgl Lahir</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umur</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sekolah</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach ($anakAsuhs as $index => $anak)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anakAsuhs->firstItem() + $index }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if ($anak->FotoAnak)
+                                        <img @click="showImageModal = true; modalImageUrl = '{{ asset('storage/' . $anak->FotoAnak) }}'" src="{{ asset('storage/' . $anak->FotoAnak) }}" class="h-10 w-10 rounded-full object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition" title="Klik untuk memperbesar">
+                                    @else
+                                        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500 italic">N/A</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="block text-sm font-semibold text-gray-900">{{ $anak->NamaLengkap }}</span>
+                                    <span class="block text-xs text-gray-500 mt-1">
+                                        <span class="font-medium text-gray-700">Ortu:</span> {{ $anak->NamaOrangTua ?? '-' }} <br>
+                                        <span class="font-medium text-gray-700">Telp:</span> {{ $anak->NomorTelp ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->TempatLahir }}, {{ $anak->TanggalLahir }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->umur }} Thn</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $anak->JenisKelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="block font-medium">{{ $anak->Sekolah }}</span>
+                                    <span class="text-xs text-gray-500">Kelas {{ $anak->Kelas }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $anak->Status == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ $anak->Status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{ route('anak_asuh.edit', $anak->id) }}" class="text-pink-600 hover:text-pink-900 mr-3 transition duration-150">Edit</a>
+                                    <form action="{{ route('anak_asuh.destroy', $anak->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 transition duration-150" onclick="return confirm('Yakin ingin menghapus data anak asuh ini?')">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                {{ $anakAsuhs->links() }}
+            </div>
         </div>
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            {{ $anakAsuhs->links() }}
+
+        <!-- Image Preview Modal -->
+        <div x-show="showImageModal" 
+             class="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            <div @click.outside="showImageModal = false" class="relative max-w-4xl w-full flex justify-center">
+                <button @click="showImageModal = false" class="absolute -top-12 right-0 text-white/70 hover:text-white transition">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <img :src="modalImageUrl" class="w-auto h-auto max-h-[85vh] rounded-lg shadow-2xl bg-white object-contain">
+            </div>
         </div>
     </div>
 </x-app-layout>

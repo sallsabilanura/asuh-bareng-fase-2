@@ -8,127 +8,119 @@
         subtitle="Pantau daftar riwayat absensi dan perkembangan pelaksanaan aktivitas pendampingan." 
     />
 
-    <!-- Filter Form & Actions -->
-    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-6 border-l-4 border-l-pink-500 flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
-        
-        <form action="{{ route('absensi_pendampingan.index') }}" method="GET" class="w-full xl:flex-1">
-            <div class="flex flex-wrap gap-3 items-end w-full">
-                <!-- Text Search -->
-                <div class="flex-1 min-w-[150px] max-w-xs">
-                    <label for="search" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Cari Anak Asuh</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                        <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Nama anak..." class="pl-9 w-full rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm py-2">
+    <!-- Filter Section (Ultra Compact Mobile) -->
+    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 border-l-4 border-l-pink-500 overflow-hidden" x-data="{ openFilter: false }">
+        <form action="{{ route('absensi_pendampingan.index') }}" method="GET" class="space-y-3">
+            <!-- Main Row: Search + Filter Toggle -->
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                </div>
-
-                <!-- Admin Mentor Filter -->
-                @if(Auth::user()->role === 'admin')
-                <div class="w-28 min-w-[110px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Kakak</label>
-                    <select name="kakak_asuh_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2">
-                        <option value="">Semua</option>
-                        @foreach($kakakAsuhs as $kakak)
-                            <option value="{{ $kakak->KakakAsuhID }}" {{ request('kakak_asuh_id') == $kakak->KakakAsuhID ? 'selected' : '' }}>
-                                {{ $kakak->NamaLengkap }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                @endif
-
-                <!-- Anak Asuh Filter -->
-                <div class="w-36 min-w-[140px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Anak Asuh</label>
-                    <select name="anak_asuh_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm py-2">
-                        <option value="">Semua Anak</option>
-                        @foreach($anakAsuhs as $anak)
-                            <option value="{{ $anak->id }}" {{ request('anak_asuh_id') == $anak->id ? 'selected' : '' }}>
-                                {{ $anak->NamaLengkap }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama anak..." class="pl-8 w-full rounded-xl border-gray-100 bg-gray-50/50 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-xs py-2">
                 </div>
                 
-                <!-- Month Filter -->
-                <div class="w-24 min-w-[90px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Bulan</label>
-                    <select name="bulan" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2">
-                        <option value="">Bulan</option>
-                        @foreach(range(1, 12) as $m)
-                            <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
-                                {{ \Carbon\Carbon::create()->month($m)->translatedFormat('M') }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                <button type="button" @click="openFilter = !openFilter" :class="openFilter ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-600 border border-pink-100'" class="p-2 rounded-xl transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                </button>
 
-                <!-- Year Filter -->
-                <div class="w-24 min-w-[90px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Tahun</label>
-                    <select name="tahun" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2">
-                        <option value="">Tahun</option>
-                        @foreach(range(date('Y') - 2, date('Y') + 2) as $y)
-                            <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>
-                                {{ $y }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                <button type="submit" class="bg-gray-900 text-white p-2 rounded-xl hover:bg-gray-800 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
 
-                <!-- Filter & Reset Buttons -->
-                <div class="flex gap-2">
-                    <button type="submit" class="bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold py-2 px-3 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center" title="Filter Data">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                    </button>
-                    @if(request()->anyFilled(['search', 'kakak_asuh_id', 'anak_asuh_id', 'bulan', 'tahun']))
-                    <a href="{{ route('absensi_pendampingan.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-center" title="Reset Area">
-                        Reset
-                    </a>
+            <!-- Advanced Filters (Collapsible) -->
+            <div x-show="openFilter" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="pt-3 border-t border-gray-50 space-y-3" style="display: none;">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    @if(Auth::user()->role === 'admin')
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Kakak Asuh</label>
+                        <select name="kakak_asuh_id" class="w-full rounded-xl border-gray-100 bg-gray-50/50 text-xs py-2 focus:border-pink-500 focus:ring-pink-500">
+                            <option value="">Semua Kakak</option>
+                            @foreach($kakakAsuhs as $kakak)
+                                <option value="{{ $kakak->KakakAsuhID }}" {{ request('kakak_asuh_id') == $kakak->KakakAsuhID ? 'selected' : '' }}>
+                                    {{ $kakak->NamaLengkap }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     @endif
-                </div>
 
-                <!-- Stats Display -->
-                @if($totalSessions !== null)
-                <div class="flex flex-wrap gap-2">
-                    <div class="flex items-center gap-2 bg-pink-50 border border-pink-100 px-4 py-2 rounded-lg">
-                        <div class="text-pink-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Anak Asuh</label>
+                        <select name="anak_asuh_id" class="w-full rounded-xl border-gray-100 bg-gray-50/50 text-xs py-2 focus:border-pink-500 focus:ring-pink-500">
+                            <option value="">Semua Anak</option>
+                            @foreach($anakAsuhs as $anak)
+                                <option value="{{ $anak->id }}" {{ request('anak_asuh_id') == $anak->id ? 'selected' : '' }}>
+                                    {{ $anak->NamaLengkap }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Bulan</label>
+                            <select name="bulan" class="w-full rounded-xl border-gray-100 bg-gray-50/50 text-xs py-2 focus:border-pink-500 focus:ring-pink-500">
+                                <option value="">Bulan</option>
+                                @foreach(range(1, 12) as $m)
+                                    <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
+                                        {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold text-pink-400 uppercase tracking-tight">Total Pendampingan</p>
-                            <p class="text-lg font-black text-pink-700 leading-none">{{ $totalSessions }} <span class="text-xs font-semibold">Kali</span></p>
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Tahun</label>
+                            <select name="tahun" class="w-full rounded-xl border-gray-100 bg-gray-50/50 text-xs py-2 focus:border-pink-500 focus:ring-pink-500">
+                                <option value="">Tahun</option>
+                                @foreach(range(date('Y') - 2, date('Y') + 2) as $y)
+                                    <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>
+                                        {{ $y }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
+                </div>
+                @if(request()->anyFilled(['search', 'kakak_asuh_id', 'anak_asuh_id', 'bulan', 'tahun']))
+                <div class="flex justify-end">
+                    <a href="{{ route('absensi_pendampingan.index') }}" class="text-[10px] text-gray-400 hover:text-pink-600 font-bold uppercase tracking-widest flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Reset Filter
+                    </a>
+                </div>
+                @endif
+            </div>
+
+            <!-- Stats & Quick Actions Row -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                @if($totalSessions !== null)
+                <div class="flex gap-2">
+                    <div class="flex items-center gap-2 bg-pink-50/50 px-3 py-1.5 rounded-xl border border-pink-100">
+                        <p class="text-[10px] font-black text-pink-600 leading-none">{{ $totalSessions }} <span class="text-[8px] font-bold text-pink-400 uppercase">Sesi</span></p>
+                    </div>
                     @if(Auth::user()->role === 'admin')
-                    <div class="flex items-center gap-2 bg-green-50 border border-green-100 px-4 py-2 rounded-lg">
-                        <div class="text-green-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold text-green-400 uppercase tracking-tight">Total Kafalah</p>
-                            <p class="text-lg font-black text-green-700 leading-none">Rp{{ number_format($totalKafalah, 0, ',', '.') }}</p>
-                        </div>
+                    <div class="flex items-center gap-2 bg-green-50/50 px-3 py-1.5 rounded-xl border border-green-100">
+                        <p class="text-[10px] font-black text-green-600 leading-none">Rp{{ number_format($totalKafalah, 0, ',', '.') }}</p>
                     </div>
                     @endif
                 </div>
                 @endif
 
-                <!-- Action Buttons: Add + PDF -->
-                <div class="flex gap-2 ml-auto lg:border-l lg:border-gray-200 lg:pl-3 w-full lg:w-auto mt-3 lg:mt-0">
+                <div class="flex items-center gap-2 ml-auto">
                     @if(Auth::user()->role !== 'admin')
-                    <a href="{{ route('absensi_pendampingan.create') }}" class="flex-1 lg:flex-none bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Tambah
+                    <a href="{{ route('absensi_pendampingan.create') }}" class="bg-pink-600 hover:bg-pink-700 text-white text-[10px] font-bold py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all shadow-sm shadow-pink-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        TAMBAH
                     </a>
                     @endif
-                    <a href="{{ route('absensi_pendampingan.export_pdf', request()->query()) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5" title="List PDF">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    <a href="{{ route('absensi_pendampingan.export_pdf', request()->query()) }}" class="bg-gray-100 text-gray-600 p-2 rounded-xl hover:bg-gray-200 transition-colors" title="Export PDF">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     </a>
                 </div>
             </div>
+        </form>
     </div>
 
     @if (session('success'))

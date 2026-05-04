@@ -172,7 +172,7 @@
         </div>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
         @if(isset($chartAnakData))
             <!-- Chart: Anak Asuh per Tahun -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

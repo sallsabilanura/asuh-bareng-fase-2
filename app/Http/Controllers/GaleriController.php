@@ -24,4 +24,19 @@ class GaleriController extends Controller
 
         return view('galeri.index', compact('galeri'));
     }
+
+    public function download($id)
+    {
+        $item = AbsensiPendampingan::findOrFail($id);
+        
+        if ($item->FotoBukti && \Illuminate\Support\Facades\Storage::disk('public')->exists($item->FotoBukti)) {
+            $path = \Illuminate\Support\Facades\Storage::disk('public')->path($item->FotoBukti);
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $filename = 'moment-' . \Illuminate\Support\Str::slug($item->anakAsuh->NamaLengkap ?? 'asuh') . '-' . $item->Tanggal . '.' . $extension;
+            
+            return response()->download($path, $filename);
+        }
+
+        return back()->with('error', 'File tidak ditemukan.');
+    }
 }

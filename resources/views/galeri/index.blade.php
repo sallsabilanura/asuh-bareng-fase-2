@@ -21,8 +21,13 @@
                         <div class="relative overflow-hidden aspect-[4/3] bg-gray-50">
                             <img src="{{ Storage::url($item->FotoBukti) }}" alt="Foto Pendampingan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <div class="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <p class="text-xs font-medium bg-pink-500/90 inline-block px-2 py-1 rounded-md mb-1">{{ \Carbon\Carbon::parse($item->Tanggal)->translatedFormat('d M Y') }}</p>
+                            <div class="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-between items-end">
+                                <div>
+                                    <p class="text-xs font-medium bg-pink-500/90 inline-block px-2 py-1 rounded-md mb-1">{{ \Carbon\Carbon::parse($item->Tanggal)->translatedFormat('d M Y') }}</p>
+                                </div>
+                                <a href="{{ route('galeri.download', $item->AbsensiID) }}" @click.stop class="bg-white/20 hover:bg-white/40 p-2 rounded-lg backdrop-blur-sm transition-colors shadow-lg" title="Unduh Foto">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                </a>
                             </div>
                         </div>
                         <div class="p-4 flex-1 flex flex-col">
@@ -40,11 +45,21 @@
                         
                         <!-- Modal -->
                         <div x-show="openModal" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 cursor-default" style="display: none;" @click.stop>
-                            <div @click.outside="openModal = false" class="relative w-full max-w-4xl mx-auto flex justify-center">
-                                <button @click="openModal = false" class="absolute -top-12 right-0 text-white/70 hover:text-white transition">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+                            <div @click.outside="openModal = false" class="relative w-full max-w-4xl mx-auto flex flex-col items-center">
+                                <div class="absolute -top-12 right-0 flex gap-4">
+                                    <a href="{{ route('galeri.download', $item->AbsensiID) }}" class="text-white/70 hover:text-white transition flex items-center gap-2 text-sm">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        Unduh
+                                    </a>
+                                    <button @click="openModal = false" class="text-white/70 hover:text-white transition">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                                 <img src="{{ Storage::url($item->FotoBukti) }}" class="w-auto h-auto max-h-[85vh] rounded shadow-2xl object-contain bg-white">
+                                <div class="mt-4 text-center text-white">
+                                    <h3 class="text-xl font-bold">{{ $item->anakAsuh->NamaLengkap ?? 'Anak Asuh' }}</h3>
+                                    <p class="text-white/70">Pendamping: {{ $item->kakakAsuh->user->name ?? 'Kakak Asuh' }} | {{ \Carbon\Carbon::parse($item->Tanggal)->translatedFormat('d F Y') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>

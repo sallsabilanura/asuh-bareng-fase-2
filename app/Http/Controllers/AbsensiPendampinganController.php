@@ -139,13 +139,15 @@ class AbsensiPendampinganController extends Controller
         return redirect()->route('absensi_pendampingan.index')->with('success', 'Absensi pendampingan berhasil disimpan.');
     }
 
-    public function show(AbsensiPendampingan $absensi_pendampingan)
+    public function show($id)
     {
+        $absensi_pendampingan = AbsensiPendampingan::findOrFail($id);
         return view('absensi_pendampingan.show', compact('absensi_pendampingan'));
     }
 
-    public function edit(AbsensiPendampingan $absensi_pendampingan)
+    public function edit($id)
     {
+        $absensi_pendampingan = AbsensiPendampingan::findOrFail($id);
         $user = Auth::user();
         if ($user && $user->role === 'kakak_asuh') {
             $kakakAsuh = $user->kakakAsuh;
@@ -160,8 +162,9 @@ class AbsensiPendampinganController extends Controller
         return view('absensi_pendampingan.edit', compact('absensi_pendampingan', 'anakAsuhs', 'kakakAsuhs'));
     }
 
-    public function update(Request $request, AbsensiPendampingan $absensi_pendampingan)
+    public function update(Request $request, $id)
     {
+        $absensi_pendampingan = AbsensiPendampingan::findOrFail($id);
         $validated = $request->validate([
             'AnakAsuhID' => 'required|exists:anak_asuhs,id',
             'KakakAsuhID' => 'required|exists:kakak_asuhs,KakakAsuhID',
@@ -196,10 +199,14 @@ class AbsensiPendampinganController extends Controller
         return redirect()->route('absensi_pendampingan.index')->with('success', 'Absensi pendampingan berhasil diperbarui.');
     }
 
-    public function destroy(AbsensiPendampingan $absensi_pendampingan)
+    public function destroy($id)
     {
-        $absensi_pendampingan->delete();
-        return redirect()->route('absensi_pendampingan.index')->with('success', 'Absensi pendampingan berhasil dihapus.');
+        try {
+            AbsensiPendampingan::destroy($id);
+            return redirect()->route('absensi_pendampingan.index')->with('success', 'Data pendampingan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('absensi_pendampingan.index')->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 
     public function exportPDF(Request $request)

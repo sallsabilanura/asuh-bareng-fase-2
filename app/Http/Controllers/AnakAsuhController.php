@@ -23,6 +23,10 @@ class AnakAsuhController extends Controller
             $query->where('NamaLengkap', 'like', '%' . $request->search . '%');
         }
 
+        if ($request->filled('status')) {
+            $query->where('Status', $request->status);
+        }
+
         if ($request->filled('umur')) {
             $age = $request->umur;
             $startDate = now()->subYears($age + 1)->addDay()->toDateString();
@@ -77,8 +81,10 @@ class AnakAsuhController extends Controller
         ]);
 
         if ($request->hasFile('FotoAnak')) {
-            $path = $request->file('FotoAnak')->store('anak_asuh', 'public');
-            $validatedData['FotoAnak'] = $path;
+            $file = $request->file('FotoAnak');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/anak_asuh'), $filename);
+            $validatedData['FotoAnak'] = 'storage/anak_asuh/' . $filename;
         }
 
         AnakAsuh::create($validatedData);
@@ -127,10 +133,15 @@ class AnakAsuhController extends Controller
         if ($request->hasFile('FotoAnak')) {
             // Delete old photo if exists
             if ($anakAsuh->FotoAnak) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($anakAsuh->FotoAnak);
+                $oldPath = public_path($anakAsuh->FotoAnak);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
             }
-            $path = $request->file('FotoAnak')->store('anak_asuh', 'public');
-            $validatedData['FotoAnak'] = $path;
+            $file = $request->file('FotoAnak');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/anak_asuh'), $filename);
+            $validatedData['FotoAnak'] = 'storage/anak_asuh/' . $filename;
         }
 
         $anakAsuh->update($validatedData);
@@ -146,7 +157,10 @@ class AnakAsuhController extends Controller
         $anakAsuh = AnakAsuh::findOrFail($id);
 
         if ($anakAsuh->FotoAnak) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($anakAsuh->FotoAnak);
+            $oldPath = public_path($anakAsuh->FotoAnak);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
         }
 
         $anakAsuh->delete();
@@ -172,5 +186,34 @@ class AnakAsuhController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new AnakAsuhExport, 'template-import-anak-asuh.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = AnakAsuh::query();
+
+        if ($request->filled('search')) {
+            $query->where('NamaLengkap', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('Status', $request->status);
+        }
+
+        if ($request->filled('umur')) {
+            $age = $request->umur;
+            $startDate = now()->subYears($age + 1)->addDay()->toDateString();
+            $endDate = now()->subYears($age)->toDateString();
+            $query->whereBetween('TanggalLahir', [$startDate, $endDate]);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('created_at', $request->tahun);
+        }
+
+        $anakAsuhs = $query->latest()->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('anak_asuh.export_pdf', compact('anakAsuhs'));
+        return $pdf->download('Data-Anak-Asuh-' . now()->format('Y-m-d') . '.pdf');
     }
 }
